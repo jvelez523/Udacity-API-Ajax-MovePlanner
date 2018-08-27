@@ -13,12 +13,12 @@ function loadData() {
 
     var streetStr = $('#street').val();
     var cityStr = $('#city').val();
-    var address = streetStr + ',' + cityStr;
+    var address = streetStr + ', ' + cityStr;
 
     $greeting.text('So, you want to live at ' + address + '?');
 
-    var streetviewURL = 'http://maps.googleapis.com/maps/api/streetview?size=600x300&location=' + address + '';
-    $body.append('<img class="bgimg" src="' + streetviewURL + ''">');
+    var streetviewURL = 'http://maps.googleapis.com/maps/api/streetview?size=600x300&location='+address+'';
+    $body.append('<img class="bgimg" src="' + streetviewURL + '">');
 
     return false;
 };
