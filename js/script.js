@@ -26,7 +26,7 @@ function loadData() {
 $('#form-container').submit(loadData);
 
 //NyTime Ajax Request
-var nytimesURL = 'https://api.nytimes.com/svc/search/v2/articlesearch.json?q='+ cityStry + "&sort=newest&api-key=1b55d9eb5b4b4481a44f287fafb28db4"
+var nytimesURL = 'https://api.nytimes.com/svc/search/v2/articlesearch.json?q='+ cityStr + "&sort=newest&api-key=1b55d9eb5b4b4481a44f287fafb28db4"
 $.getJSON("ntyimesURL", function(data) {
     $nytHeaderElem.text('New York Times Articles About'+ cityStr);
     articles = data.response.docs;
