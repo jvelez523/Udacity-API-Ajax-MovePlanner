@@ -1,4 +1,3 @@
-
 function loadData() {
 
     var $body = $('body');
@@ -11,39 +10,97 @@ function loadData() {
     $wikiElem.text("");
     $nytElem.text("");
 
+    // load streetview
 
-    var streetStr = $('#street').val();
-    var cityStr = $('#city').val();
-    var address = streetStr + ', ' + cityStr;
+    var $streetVal = $('#street').val();
+    var $cityVal = $('#city').val();
+    // $streetVal= removeSpace($streetVal);
+    // $cityVal =  removeSpace($cityVal);
+    var address = $streetVal + ', ' + $cityVal;
+    var apiKey = 'AIzaSyAjxLDoZqFMPJLF0f46YEcUveejAl7MeNg';
+    var baseUrl = 'http://maps.googleapis.com/maps/api/streetview?size=600x300&location=';
+    var image = $('<img class="bgimg" src="' + baseUrl + address + '&key=' + apiKey + '">');
+    $body.append(image);
+    $greeting.text("So, you want to live in " + $cityVal+ "?");
 
-    $greeting.text('So, you want to live at ' + address.toUpperCase() + '?');
 
-    // creating a streetview url to get the picture of the street
-    var streetviewUrl = 'http://maps.googleapis.com/maps/api/streetview?size=600x400&location='
-    + address + '';
+    // load NYT
+    var urlNYT = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
+    urlNYT += '?' + $.param({
+            'api-key': "c65f0478b82248e2a533e9845dfdd4bc",
+            'q': $cityVal
+        });
 
-    // append to the body the link as an a tag
-    $body.append('<img class="bgimg" src="' + streetviewUrl + '">');
+    $.getJSON(urlNYT, function (data) {
 
-    // creating a url for the AJAX requests to NY Times
-    // the articles will be requested based on the city
-    var nytimesUrl = 'http://api.nytimes.com/svc/search/v2/articlesearch.json?q='
-     + cityStr + '&sort=newest&api-key=19a6d57d79654c298a0b02e85d96d00e'
+        // change header
+        $('#nytimes-header').text('Articles about ' + $cityVal);
 
-     // creating a request on the url
-    $.getJSON(nytimesUrl, function(data) {
-      // creating a headline with the requested city
-        $nytHeaderElem.text('New York Times Articles About ' + cityStr.toUpperCase());
-        // saving the response data in a variable
-        articles = data.response.docs;
-        // iterating through the articles
-        for(var i = 0; i < articles.length; i++) {
-            var article = articles[i];
-            // append each article to a li element
-            // each li element consists of an a and a p tag
-            $nytElem.append('<li class="article">' + '<a href="'
-            + article.web_url + '">' + article.headline.main + '</a>' +
-            '<p>' + article.snippet + '</p>' + '</li>');
-        };
+
+        // iterate tru response json and add <li> with url, heading and snippet, then append <li>s to ul
+        for (var obj in data.response.docs) {
+
+            var objUrl = data.response.docs[obj].web_url;
+            var objLeadP = data.response.docs[obj].snippet;
+            var objHeadline = data.response.docs[obj].headline.main;
+
+            var articleLi = $("<li class='article'>" +
+                '<a href="' + objUrl + '">' + objHeadline + '</a>' +
+                '<p>' + objLeadP + '</p>' +
+                "</li>");
+            // var articleLink= $('<a href=""/>');
+            // articleLink.text(objHeadline);
+            //
+            // var articleP= $("<p></p>");
+            //
+            // articleLi.append(articleLink.attr('href', objUrl));
+            // articleLi.append(articleP.text( objLeadP ));
+
+            $('#nytimes-articles').append(articleLi);
+        }
+
+
+    }).fail(function () {
+        $nytHeaderElem.text('Articles not found');
+    });
+
+// load Wikipedia
+
+    //set timeout function to change text if error occurs
+    var wikiTimeout = setTimeout(function () {
+        $wikiElem.text("Wiki not loaded");
+    }, 5000);
+    $.ajax({
+        url: 'https://en.wikipedia.org/w/api.php?action=opensearch&search=' + $cityVal + '&format=json&prop=info&titles=',
+        dataType: 'jsonp',
+        success: function (data) {
+
+            var objectsWiki = data[1];
+            var linksWiki = data[3];
+            for (obj in objectsWiki) {
+
+
+                var aHref = $('<a href="' + linksWiki[obj] + '">' + objectsWiki[obj] + '</a>');
+                var wikiLink = $('<li></li>');
+                wikiLink.append(aHref);
+                $wikiElem.append(wikiLink);
+            }
+             //if error doesnt ocur, clear timeout,
+            // ako ne stavimo ovo pojavice se novi tekst iako je zahtev uspesan
+            clearTimeout(wikiTimeout);
+        }
+    });
+
+    return false;
+};
 
 $('#form-container').submit(loadData);
+
+
+//
+// function removeSpace(string){
+//     var regex = /\s/g;
+//
+//     return  string.replace(regex, '&');
+//
+// }
